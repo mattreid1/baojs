@@ -1,3 +1,3 @@
 "use strict";
-import bao from "./lib/bao";
+import bao from "./bao";
 export default bao;

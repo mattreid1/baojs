@@ -1,4 +1,5 @@
 **/node_modules
+dist/
 
 # This is temporary
 tests/
