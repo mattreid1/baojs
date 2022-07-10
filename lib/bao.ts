@@ -22,6 +22,17 @@ export default class Bao {
   };
 
   /**
+   * Default not found handler
+   *
+   * @returns
+   */
+  notFoundHandler = (): Response | Promise<Response>  => {
+    return new Response("404 Not Found", {
+      status: 404,
+    });
+  };
+
+  /**
    * Middleware to be run before the path handler
    *
    * @param fn The middleware function to be run before the path handler
@@ -113,10 +124,12 @@ export default class Bao {
   #serve(listen: IListen): Serve {
     let router = this.#router;
     let errorHandler = this.errorHandler;
+    let notFoundHandler = this.notFoundHandler;
     return {
       async fetch(req: Request) {
         let ctx = new Context(req);
-        return await router.handle(ctx);
+        const res = await router.handle(ctx);
+        return res.status === 404? notFoundHandler():res;
       },
       error(error: Error) {
         return errorHandler(error);
