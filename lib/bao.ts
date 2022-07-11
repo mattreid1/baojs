@@ -9,8 +9,8 @@ export default class Bao {
   /**
    * Default error handler
    *
-   * @param error
-   * @returns
+   * @param error The error that is thrown
+   * @returns A response to be sent upon an error being thrown
    */
   errorHandler = (
     error: Errorlike
@@ -24,9 +24,9 @@ export default class Bao {
   /**
    * Default not found handler
    *
-   * @returns
+   * @returns The response for when a route is not found
    */
-  notFoundHandler = (): Response | Promise<Response>  => {
+  notFoundHandler = (): Response | Promise<Response> => {
     return new Response("404 Not Found", {
       status: 404,
     });
@@ -129,7 +129,7 @@ export default class Bao {
       async fetch(req: Request) {
         let ctx = new Context(req);
         const res = await router.handle(ctx);
-        return res.status === 404? notFoundHandler():res;
+        return res.status === 404 ? notFoundHandler() : res;
       },
       error(error: Error) {
         return errorHandler(error);

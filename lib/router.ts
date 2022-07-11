@@ -41,8 +41,7 @@ export default class Router {
     const route = this.#router.find(method, ctx.path);
 
     // If route not found, send an empty 404
-    if (route.handler == null)
-      return new Response("404 Not Found", { status: 404 });
+    if (route.handler == null) return new Response(null, { status: 404 });
 
     // Assign the route parameters
     ctx.params = route.params;

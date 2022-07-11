@@ -177,6 +177,7 @@ app.errorHandler = (error: Error) => {
   logErrorToLoggingService(error);
   return new Response("Oh no! An error has occurred...");
 };
+
 // Custom 404 not found handler
 app.notFoundHandler = () => {
   return new Response("Route not found...");
