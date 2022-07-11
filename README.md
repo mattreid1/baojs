@@ -306,6 +306,32 @@ app.use((ctx) => {
 app.listen(1234);
 ```
 
+#### Fastify
+
+Bao.js is about equal to Fastify in both throughput and latency.
+
+```shell
+$ wrk -t12 -c 500 -d10s http://localhost:5000/
+Running 10s test @ http://localhost:5000/
+  12 threads and 500 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    15.32ms    1.90ms  60.53ms   78.74%
+    Req/Sec     2.68k   274.95     3.25k    72.08%
+  319946 requests in 10.01s, 50.65MB read
+  Socket errors: connect 0, read 681, write 0, timeout 0
+Requests/sec:  31974.36
+Transfer/sec:      5.06MB
+```
+
+```javascript
+const fastify = require("fastify");
+const app = fastify({ logger: false });
+
+app.get("/", () => "OK");
+
+app.listen({ port: 5000 });
+```
+
 ## Contribute
 
 PRs are welcome! If you're looking for something to do, maybe take a look at the Issues?
