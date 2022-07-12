@@ -6,6 +6,13 @@
     "type": "git",
     "url": "https://github.com/mattreid1/baojs.git"
   },
+  "keywords": [
+    "bun",
+    "web",
+    "framework",
+    "http",
+    "middleware"
+  ],
   "main": "./dist/index.js",
   "description": "A fast, minimalist web framework for the Bun.js runtime",
   "license": "MIT",
