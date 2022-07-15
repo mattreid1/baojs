@@ -1,12 +1,10 @@
-import { suite } from "uvu";
-import * as assert from "uvu/assert";
 import Bao from "../lib";
 
-const test = suite("index");
+import { describe, expect } from "./test-utils";
 
-test("exports app factory ", () => {
-  const app = new Bao();
-  assert.instance(app, Bao);
+describe("index", (it) => {
+  it("exports app factory ", () => {
+    const app = new Bao();
+    expect(app).toBeInstanceOf(Bao);
+  });
 });
-
-test.run();

@@ -18,7 +18,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf dist/ && tsc",
-    "test": "bun ./node_modules/uvu/bin.js test"
+    "test": "bun ./node_modules/uvu/bin.js test '.+\\.test\\.ts'"
   },
   "dependencies": {
     "bun-types": "^0.1.2"
