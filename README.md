@@ -24,9 +24,9 @@ A fast, minimalist web framework for the [Bun JavaScript runtime](https://bun.sh
 
 Bun was released as a fast, modern JavaScript runtime. One of the many improvements over Node.js was the 2.5x increase in HTTP request throughput when compared to the Node.js `http` module ([reference](https://github.com/Jarred-Sumner/bun/blob/7d1c9fa1a471d180c078a860c4885478f334bdf5/README.md#bunserve---fast-http-server)).
 
-Bao.js uses Bun's built in `Bun.serve` module to serve routes and uses a radix tree for finding those routes resulting in exceptionally low latency response times. Bao is loosely syntactically modelled after [Express.js](https://github.com/expressjs/express) and [Koa.js](https://koajs.com/) with a handful of changes and upgrades to help with speed and improve the developer experience.
+Bao.js uses Bun's built in `Bun.serve` module to serve routes and uses a radix tree for finding those routes resulting in exceptionally low latency response times. Bao is loosely syntactically modeled after [Express.js](https://github.com/expressjs/express) and [Koa.js](https://koajs.com/) with a handful of changes and upgrades to help with speed and improve the developer experience.
 
-Bao works creating a `Context` object (`ctx`) for each request and passing that through middleware and the destination route. This Context object also has various shortcut methods to make life easier such as by having standard response types (e.g. `ctx.sendJson({ "hello": "world" })`). When a route or middleware is finished, it should return the Context object to pass it along the chain until it is sent to the user.
+Bao works by creating a `Context` object (`ctx`) for each request and passing that through middleware and the destination route. This Context object also has various shortcut methods to make life easier such as by having standard response types (e.g. `ctx.sendJson({ "hello": "world" })`). When a route or middleware is finished, it should return the Context object to pass it along the chain until it is sent to the user.
 
 The code is well documented and uses TypeScript, but more complete documentation will be added here in the future. It is not recommended to use this in production yet as both Bun and Bao.js are in beta.
 
@@ -62,7 +62,7 @@ Then to get Bao to listen for requests, run
 app.listen();
 ```
 
-This will start a web sever on the default port 3000 listening on all interfaces (`0.0.0.0`). The port can be modified in the `listen()` options
+This will start a web server on the default port 3000 listening on all interfaces (`0.0.0.0`). The port can be modified in the `listen()` options
 
 ```typescript
 app.listen({ port: 8080 });
