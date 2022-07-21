@@ -5,6 +5,10 @@
 [![npm](https://img.shields.io/npm/l/baojs.svg)](https://spdx.org/licenses/MIT)
 [![npm](https://img.shields.io/npm/dt/baojs.svg)](<[![npm](https://img.shields.io/npm/v/npm.svg)](https://www.npmjs.com/package/baojs)>)
 
+<p align="center">
+  <img src="media/bao175.png" alt="Logo"></a>
+</p>
+
 A fast, minimalist web framework for the [Bun JavaScript runtime](https://bun.sh/).
 
 ⚡️ **Bao.js** is **3.7x faster** than **Express.js** and has similar syntax for an easy transition.
