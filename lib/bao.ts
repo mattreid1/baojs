@@ -32,7 +32,7 @@ export default class Bao {
     });
   };
 
-  wssHandler: () => WebSocketHandler;
+  wssHandler: WebSocketHandler;
 
   /**
    * Middleware to be run before the path handler
@@ -129,7 +129,7 @@ export default class Bao {
     let notFoundHandler = this.notFoundHandler;
     let wssHandler = this.wssHandler;
     return {
-      websocket: wssHandler(),
+      websocket: wssHandler,
       async fetch(req: Request, server: Server) {
         if (!!wssHandler && server.upgrade(req)) {
           return undefined;
