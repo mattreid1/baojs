@@ -40,6 +40,10 @@ export default class Context {
    * The URL object
    */
   readonly url: URL;
+  /**
+   * URL query search parameters
+   */
+  readonly query: URLSearchParams;
 
   constructor(req: Request) {
     this.req = req;
@@ -51,6 +55,7 @@ export default class Context {
     this.host = url.host;
     this.path = url.pathname;
     this.url = url;
+    this.query = url.searchParams;
 
     /**
      * Calling this (or arrayBuffer(), json(), text()) here
