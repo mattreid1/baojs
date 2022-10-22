@@ -1,4 +1,4 @@
-import { Errorlike, Serve, Server } from "bun";
+import { Errorlike, Serve, Server, WebSocketHandler } from "bun";
 import Context from "./context";
 import { MiddlewarePosition } from "./middleware";
 import Router, { TMethods } from "./router";
@@ -31,6 +31,8 @@ export default class Bao {
       status: 404,
     });
   };
+
+  wssHandler: WebSocketHandler;
 
   /**
    * Middleware to be run before the path handler
@@ -125,8 +127,13 @@ export default class Bao {
     let router = this.#router;
     let errorHandler = this.errorHandler;
     let notFoundHandler = this.notFoundHandler;
+    let wssHandler = this.wssHandler;
     return {
-      async fetch(req: Request) {
+      websocket: wssHandler,
+      async fetch(req: Request, server: Server) {
+        if (!!wssHandler && server.upgrade(req)) {
+          return undefined;
+        }
         let ctx = new Context(req);
         const res = await router.handle(ctx);
         return res.status === 404 ? notFoundHandler() : res;
