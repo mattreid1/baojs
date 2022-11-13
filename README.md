@@ -88,7 +88,9 @@ app.get("/", (ctx) => {
   return ctx.sendText("Hello World!");
 });
 
-app.listen();
+const server = app.listen();
+
+console.log(`Listening on ${server.hostname}:${server.port}`);
 ```
 
 #### Read request body
@@ -190,9 +192,90 @@ app.notFoundHandler = () => {
 app.listen();
 ```
 
+### WebSockets
+
+Bao.js can handle the routing of WebSockets too. Under the hood, it takes advantage of the native Bun WebSocket which itself uses [µWebSockets](https://github.com/uNetworking/uWebSockets), a compiled and highly optimized web server.
+
+```typescript
+// index.ts
+import { v4 as uuidv4 } from "uuid";
+import Bao from "baojs";
+
+const app = new Bao();
+
+// Ping/pong
+app.ws("/ping", {
+  message: (ws, msg: string | Uint8Array) => {
+    ws.send("pong");
+  },
+});
+
+// Simple chat room
+app.ws("/room/:roomId", {
+  open: (ws) => {
+    const roomId = ws.data.ctx.params.roomId;
+    ws.data.uuid = uuidv4();
+    ws.publish(roomId, `New user "${ws.data.uuid}" joined "${roomId}"`);
+    ws.subscribe(roomId);
+  },
+  close: (ws) => {
+    const roomId = ws.data.ctx.params.roomId;
+    ws.publish(roomId, `User "${ws.data.uuid}" disconnected`);
+    ws.unsubscribe(roomId);
+  },
+  message: (ws, msg: string | Uint8Array) => {
+    const roomId = ws.data.ctx.params.roomId;
+    const uuid = ws.data.uuid;
+    ws.publish(roomId, `${uuid}: ${msg}`);
+  },
+});
+
+const server = app.listen();
+console.log(`Listening on ${server.hostname}:${server.port}`);
+```
+
+#### Authenticated WebSockets
+
+```typescript
+// index.ts
+import Bao from "baojs";
+
+const app = new Bao();
+
+// Ping/pong
+app.ws("/protected/ping", {
+  upgrade: (ctx) => {
+    const secretToken = process.env.SECRET;
+
+    if (ctx.headers.get("authorization") !== `Bearer ${secretToken}`) {
+      // forceSend() is required here to deny the upgrade
+      return ctx.sendText("Unauthorized", { status: 403 }).forceSend();
+    }
+
+    // User is now authenticated
+
+    // Will propagate to all handlers once the upgrade is complete
+    ctx.extra.user = getUser(ctx);
+
+    return ctx;
+  },
+  open: (ws) => {
+    // Only for authorized users
+    const user = ws.data.ctx.extra.user;
+    console.log(`User "${user}" connected with the secret token`);
+  },
+  message: (ws, msg: string | Uint8Array) => {
+    // Only for authorized users
+    ws.send("secret pong");
+  },
+});
+
+const server = app.listen();
+```
+
 ### Middleware
 
-Middleware is split into middleware that runs before the routes, and middleware that runs after them. This helps to contribute to the performance of Bao.js.
+Middleware is split into middleware that runs before the routes, and middleware that runs after them. This helps to contribute to the performance of Bao.js. Note that the middleware only runs for HTTP routes and not for WebSockets - however, it does run prior to the connection being upgraded to a WebSocket.
 
 ```typescript
 // index.ts

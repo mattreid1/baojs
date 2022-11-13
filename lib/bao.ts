@@ -1,9 +1,9 @@
-import { Errorlike, Serve, Server, WebSocketHandler } from "bun";
-import Context from "./context";
+import type { Errorlike, Serve, Server, ServerWebSocket } from "bun";
+import { Context, WebSocketContext } from "./context";
 import { MiddlewarePosition } from "./middleware";
-import Router, { TMethods } from "./router";
+import { Router, TMethods } from "./router";
 
-export default class Bao {
+export class Bao {
   #router = new Router();
 
   /**
@@ -31,8 +31,6 @@ export default class Bao {
       status: 404,
     });
   };
-
-  wssHandler: WebSocketHandler;
 
   /**
    * Middleware to be run before the path handler
@@ -114,6 +112,16 @@ export default class Bao {
   }
 
   /**
+   * Creates a route a WebSocket connection
+   *
+   * @param path The path of the route
+   * @param handlers The handler function for the WebSocket connection
+   */
+  ws(path: string, handlers: IWebSocketHandlers): void {
+    this.#router.registerWebSocket(path, handlers);
+  }
+
+  /**
    * Start the server on the specified port
    *
    * @param options The options for the server
@@ -127,14 +135,19 @@ export default class Bao {
     let router = this.#router;
     let errorHandler = this.errorHandler;
     let notFoundHandler = this.notFoundHandler;
-    let wssHandler = this.wssHandler;
     return {
-      websocket: wssHandler,
+      websocket: {
+        open: (ws: ServerWebSocket<IWebSocketData>) =>
+          router.handleWebSocket(ws).open(),
+        close: (ws: ServerWebSocket<IWebSocketData>) =>
+          router.handleWebSocket(ws).close(),
+        message: (
+          ws: ServerWebSocket<IWebSocketData>,
+          msg: string | Uint8Array
+        ) => router.handleWebSocket(ws).message(msg),
+      },
       async fetch(req: Request, server: Server) {
-        if (!!wssHandler && server.upgrade(req)) {
-          return undefined;
-        }
-        let ctx = new Context(req);
+        let ctx = new Context(req, server);
         const res = await router.handle(ctx);
         return res.status === 404 ? notFoundHandler() : res;
       },
@@ -156,4 +169,26 @@ interface IListen {
 
 export interface IHandler {
   (ctx: Context): Context | Promise<Context>;
+}
+
+export interface IWebSocketHandlers {
+  open?: (ws: ServerWebSocket<IWebSocketData>) => Promise<void> | void;
+  close?: (ws: ServerWebSocket<IWebSocketData>) => Promise<void> | void;
+  message?: (
+    ws: ServerWebSocket<IWebSocketData>,
+    msg: string | Uint8Array
+  ) => Promise<void> | void;
+
+  /**
+   * Runs as middleware before the connection upgrade
+   *
+   * @param ctx The Context from the route handler
+   * @returns The final Context object before the upgrade
+   */
+  upgrade?(ctx: Context): Promise<Context> | Context;
+}
+
+export interface IWebSocketData {
+  [key: string]: any;
+  ctx: WebSocketContext;
 }

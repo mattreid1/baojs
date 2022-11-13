@@ -1,5 +1,6 @@
-import { IHandler } from "../bao";
-import Node from "./tree";
+import { IHandler, IWebSocketHandlers } from "../bao";
+import { TMethods } from "../router";
+import { Node } from "./tree";
 
 const httpMethods = [
   "GET",
@@ -14,7 +15,7 @@ const httpMethods = [
 ];
 const NOT_FOUND: IRouterResponse = { handler: null, params: {} };
 
-export default class BaoRouter {
+export class BaoRouter {
   trees: { [key: string]: Node };
   opts: { [key: string]: any };
 
@@ -27,21 +28,30 @@ export default class BaoRouter {
   }
   any(path: string, handler: IHandler) {
     for (const method of httpMethods) {
-      this.on(method, path, handler);
+      this.on(method as TMethods, path, handler);
     }
   }
-  on(method: string, path: string, handler: IHandler) {
+  ws(path: string, handlers: IWebSocketHandlers) {
     if (path[0] !== "/") {
       throw new Error("path must begin with '/' in path");
     }
-
+    if (!this.trees["WS"]) {
+      this.trees["WS"] = new Node();
+    }
+    this.trees["WS"].addRoute(path, handlers);
+    return this;
+  }
+  on(method: TMethods, path: string, handler: IHandler) {
+    if (path[0] !== "/") {
+      throw new Error("path must begin with '/' in path");
+    }
     if (!this.trees[method]) {
       this.trees[method] = new Node();
     }
     this.trees[method].addRoute(path, handler);
     return this;
   }
-  find(method, path): IRouterResponse {
+  find(method: string, path: string): IRouterResponse {
     const tree = this.trees[method];
     if (tree) {
       return tree.search(path);
@@ -51,6 +61,6 @@ export default class BaoRouter {
 }
 
 export interface IRouterResponse {
-  handler: IHandler | null;
+  handler: IHandler | IWebSocketHandlers | null;
   params: { [key: string]: string };
 }

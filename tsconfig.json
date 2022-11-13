@@ -2,14 +2,14 @@
   "compilerOptions": {
     "declaration": true,
     "lib": ["ESNext"],
-    "module": "CommonJS",
+    "module": "esnext",
+    "target": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitReturns": true,
     "outDir": "dist",
     "skipLibCheck": true,
     "sourceMap": true,
-    "target": "es2018",
     "types": ["bun-types"]
   },
   "include": ["lib/**/*.ts"]

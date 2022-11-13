@@ -1,9 +1,10 @@
-import { IHandler } from "./bao";
-import Context from "./context";
-import Middleware from "./middleware";
-import BaoRouter from "./router/router";
+import type { ServerWebSocket } from "bun";
+import type { IHandler, IWebSocketData, IWebSocketHandlers } from "./bao";
+import { Context, WebSocketContext } from "./context";
+import { Middleware } from "./middleware";
+import { BaoRouter } from "./router/router";
 
-export default class Router {
+export class Router {
   #router = new BaoRouter();
 
   /**
@@ -27,6 +28,61 @@ export default class Router {
   }
 
   /**
+   * Register a WebSocket route with the router
+   *
+   * @param path The path of the WebSocket
+   * @param handlers The WebSocket path handler function
+   */
+  registerWebSocket(path: string, handlers: IWebSocketHandlers) {
+    // WebSocket handler function
+    this.#router.ws(path, handlers);
+
+    // Upgrade connection to WebSocket
+    this.#router.on("GET", path, async (ctx) => {
+      const wsCtx = new WebSocketContext(ctx);
+      const data: IWebSocketData = {
+        ctx: wsCtx,
+      };
+
+      // Run the optional before upgrade middleware
+      if (handlers.upgrade != null)
+        ctx = await Promise.resolve(handlers.upgrade(ctx));
+      if (!ctx.isLocked()) {
+        // Upgrade the HTTP connection to a WebSocket connection
+        if (ctx.server.upgrade(ctx.req, { data }) === false)
+          throw new Error(`Unable to upgrade request on path "${ctx.path}"`);
+      }
+
+      return ctx;
+    });
+  }
+
+  /**
+   * Handles WebSocket connections
+   *
+   * @param ws The WebSocket instance itself
+   * @returns Methods to handle stages of the WebSocket lifecycle
+   */
+  handleWebSocket(ws: ServerWebSocket<IWebSocketData>) {
+    const path = ws.data.ctx.path;
+    const route = this.#router.find("WS", path);
+    const handlers = route.handler as IWebSocketHandlers;
+
+    return {
+      open: () =>
+        handlers.open != null ? Promise.resolve(handlers.open(ws)) : void null,
+      close: () =>
+        handlers.close != null
+          ? Promise.resolve(handlers.close(ws))
+          : void null,
+      message: (msg: string | Uint8Array) =>
+        handlers.message != null
+          ? Promise.resolve(handlers.message(ws, msg))
+          : void null,
+    };
+  }
+
+  /**
    * Handles an incoming request
    *
    * @param ctx The Context object created by the request
@@ -34,9 +90,9 @@ export default class Router {
    */
   async handle(ctx: Context): Promise<Response> {
     let method = ctx.method;
-    if (method == "HEAD") {
-      method = "GET";
-    }
+    if (method == "HEAD") method = "GET";
+    if (method == "WS")
+      throw new Error("WebSocket method called on HTTP route handler");
 
     const route = this.#router.find(method, ctx.path);
 
@@ -48,7 +104,8 @@ export default class Router {
 
     // Run the Context through the middleware and route
     ctx = await this.middleware.before(ctx);
-    if (!ctx.isLocked()) ctx = await Promise.resolve(route.handler(ctx));
+    const handler = route.handler as IHandler;
+    if (!ctx.isLocked()) ctx = await Promise.resolve(handler(ctx));
     if (!ctx.isLocked()) ctx = await this.middleware.after(ctx);
 
     // Handle a HEAD request

@@ -1,4 +1,4 @@
-import { IHandler } from "../bao";
+import { IHandler, IWebSocketHandlers } from "../bao";
 import { IRouterResponse } from "./router";
 
 const STATIC = 0;
@@ -62,13 +62,13 @@ function longestCommonPrefix(a, b) {
   return i;
 }
 
-export default class Node {
+export class Node {
   path: string;
   wildChild: boolean;
   type: number;
   indices: string;
   children: Node[];
-  handler: IHandler | null;
+  handler: IHandler | IWebSocketHandlers | null;
   priority: number;
 
   constructor(
@@ -120,7 +120,7 @@ export default class Node {
   /**
    * Adds a node with the given handler to the path
    */
-  addRoute(path: string, handler: IHandler) {
+  addRoute(path: string, handler: IHandler | IWebSocketHandlers) {
     let n: Node = this;
     let fullPath = path;
     n.priority++;
@@ -227,7 +227,11 @@ export default class Node {
     }
   }
 
-  insertChild(path: string, fullPath: string, handler: IHandler) {
+  insertChild(
+    path: string,
+    fullPath: string,
+    handler: IHandler | IWebSocketHandlers
+  ) {
     let n: Node = this;
 
     while (true) {

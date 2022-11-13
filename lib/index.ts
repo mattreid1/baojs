@@ -1,3 +1,5 @@
 "use strict";
-import bao from "./bao";
-export default bao;
+import { Bao } from "./bao";
+export default Bao;
+export * from "./bao";
+export * from "./context";

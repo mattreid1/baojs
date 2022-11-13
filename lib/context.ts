@@ -1,4 +1,6 @@
-export default class Context {
+import type { Server } from "bun";
+
+export class Context {
   /**
    * The raw Request object
    */
@@ -7,6 +9,10 @@ export default class Context {
    * The Response object to be sent
    */
   res: Response | null;
+  /**
+   * The actual Bun web server
+   */
+  server: Server;
   /**
    * Anything extra supplied by the middleware
    */
@@ -45,8 +51,9 @@ export default class Context {
    */
   readonly query: URLSearchParams;
 
-  constructor(req: Request) {
+  constructor(req: Request, server: Server) {
     this.req = req;
+    this.server = server;
     this.res = null;
 
     const url = new URL(req.url);
@@ -56,12 +63,6 @@ export default class Context {
     this.path = url.pathname;
     this.url = url;
     this.query = url.searchParams;
-
-    /**
-     * Calling this (or arrayBuffer(), json(), text()) here
-     * prevents freezing when trying to access any of them later
-     */
-    this.req.blob();
   }
 
   /**
@@ -148,4 +149,60 @@ export default class Context {
     this.res = res;
     return this;
   };
+}
+
+export class WebSocketContext {
+  /**
+   * The raw Request object
+   */
+  readonly req: Request;
+  /**
+   * The actual Bun web server
+   */
+  readonly server: Server;
+  /**
+   * Anything extra supplied by the middleware
+   */
+  extra: { [key: string]: any } = {};
+  /**
+   * URL parameters
+   */
+  readonly params: { [key: string]: string };
+  /**
+   * The HTTP method
+   */
+  readonly method: string;
+  /**
+   * The headers supplied in the request
+   */
+  readonly headers: Request["headers"];
+  /**
+   * The host as specified by the client
+   */
+  readonly host: string;
+  /**
+   * The requested path (e.g. "/index.html")
+   */
+  readonly path: string;
+  /**
+   * The URL object
+   */
+  readonly url: URL;
+  /**
+   * URL query search parameters
+   */
+  readonly query: URLSearchParams;
+
+  constructor(ctx: Context) {
+    this.req = Object.freeze(ctx.req);
+    this.server = ctx.server;
+    this.extra = ctx.extra;
+    this.params = ctx.params;
+    this.method = ctx.method;
+    this.headers = ctx.headers;
+    this.host = ctx.host;
+    this.path = ctx.path;
+    this.url = ctx.url;
+    this.query = ctx.query;
+  }
 }

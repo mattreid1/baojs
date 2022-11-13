@@ -1,7 +1,7 @@
 import { IHandler } from "./bao";
-import Context from "./context";
+import { Context } from "./context";
 
-export default class Middleware {
+export class Middleware {
   #before: Array<IHandler> = [];
   #after: Array<IHandler> = [];
 
