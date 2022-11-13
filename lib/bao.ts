@@ -26,7 +26,7 @@ export class Bao {
    *
    * @returns The response for when a route is not found
    */
-  notFoundHandler = (): Response | Promise<Response> => {
+  notFoundHandler = (ctx: Context): Response | Promise<Response> => {
     return new Response("404 Not Found", {
       status: 404,
     });
@@ -149,7 +149,7 @@ export class Bao {
       async fetch(req: Request, server: Server) {
         let ctx = new Context(req, server);
         const res = await router.handle(ctx);
-        return res.status === 404 ? notFoundHandler() : res;
+        return res.status === 404 ? notFoundHandler(ctx) : res;
       },
       error(error: Error) {
         return errorHandler(error);

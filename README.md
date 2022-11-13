@@ -185,7 +185,7 @@ app.errorHandler = (error: Error) => {
 };
 
 // Custom 404 not found handler
-app.notFoundHandler = () => {
+app.notFoundHandler = (ctx) => {
   return new Response("Route not found...");
 };
 
