@@ -205,7 +205,7 @@ const app = new Bao();
 
 // Ping/pong
 app.ws("/ping", {
-  message: (ws, msg: string | Uint8Array) => {
+  message: (ws, msg) => {
     ws.send("pong");
   },
 });
@@ -223,7 +223,7 @@ app.ws("/room/:roomId", {
     ws.publish(roomId, `User "${ws.data.uuid}" disconnected`);
     ws.unsubscribe(roomId);
   },
-  message: (ws, msg: string | Uint8Array) => {
+  message: (ws, msg) => {
     const roomId = ws.data.ctx.params.roomId;
     const uuid = ws.data.uuid;
     ws.publish(roomId, `${uuid}: ${msg}`);
@@ -264,7 +264,7 @@ app.ws("/protected/ping", {
     const user = ws.data.ctx.extra.user;
     console.log(`User "${user}" connected with the secret token`);
   },
-  message: (ws, msg: string | Uint8Array) => {
+  message: (ws, msg) => {
     // Only for authorized users
     ws.send("secret pong");
   },
