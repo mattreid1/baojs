@@ -48,6 +48,12 @@ export class Router {
       if (handlers.upgrade != null)
         ctx = await Promise.resolve(handlers.upgrade(ctx));
       if (!ctx.isLocked()) {
+        // Check the Upgrade header
+        if (ctx.headers.get("upgrade").toLowerCase() != "websocket")
+          return ctx
+            .sendText("Upgrade header is invalid", { status: 400 })
+            .forceSend();
+
         // Upgrade the HTTP connection to a WebSocket connection
         if (ctx.server.upgrade(ctx.req, { data }) === false)
           throw new Error(`Unable to upgrade request on path "${ctx.path}"`);
