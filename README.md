@@ -26,7 +26,7 @@ A fast, minimalist web framework for the [Bun JavaScript runtime](https://bun.sh
 
 ## Background
 
-Bun was released as a fast, modern JavaScript runtime. One of the many improvements over Node.js was the 2.5x increase in HTTP request throughput when compared to the Node.js `http` module ([reference](https://github.com/Jarred-Sumner/bun/blob/7d1c9fa1a471d180c078a860c4885478f334bdf5/README.md#bunserve---fast-http-server)).
+Bun was released as a fast, modern JavaScript runtime. One of the many improvements over Node.js was the 2.5x increase in HTTP request throughput when compared to the Node.js `http` module ([reference](https://github.com/oven-sh/bun/blob/7d1c9fa1a471d180c078a860c4885478f334bdf5/README.md#bunserve---fast-http-server)).
 
 Bao.js uses Bun's built in `Bun.serve` module to serve routes and uses a radix tree for finding those routes resulting in exceptionally low latency response times. Bao is loosely syntactically modeled after [Express.js](https://github.com/expressjs/express) and [Koa.js](https://koajs.com/) with a handful of changes and upgrades to help with speed and improve the developer experience.
 
