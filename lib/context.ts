@@ -104,9 +104,12 @@ export class Context {
    */
   sendPrettyJson = (
     json: { [key: string]: any },
-    options: ResponseInit = { headers: {} }
+    options: ResponseInit = { }
   ) => {
-    options.headers["Content-Type"] = "application/json";
+    options.headers = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    };
     this.res = new Response(JSON.stringify(json, null, 2), options);
     return this;
   };
@@ -120,9 +123,12 @@ export class Context {
    */
   sendJson = (
     json: { [key: string]: any },
-    options: ResponseInit = { headers: {} }
+    options: ResponseInit = { }
   ) => {
-    options.headers["Content-Type"] = "application/json";
+    options.headers = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    };
     this.res = new Response(JSON.stringify(json), options);
     return this;
   };
