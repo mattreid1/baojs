@@ -106,6 +106,16 @@ export class Bao {
     this.#handleMethod("PATCH", path, handler);
   }
 
+  /**
+   * Creates a route for the OPTIONS HTTP method
+   *
+   * @param path The path of the route
+   * @param handler The handler function for the route
+   */
+  options(path: string, handler: IHandler): void {
+    this.#handleMethod("OPTIONS", path, handler);
+  }
+
   // Handle the HTTP methods
   #handleMethod(method: TMethods, path: string, handler: IHandler) {
     this.#router.register(method, path, handler);
