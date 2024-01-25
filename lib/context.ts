@@ -84,6 +84,11 @@ export class Context {
     return this.#forceSend;
   }
 
+  accepts(type: string) {
+    const accepts = this.headers.get("accept");
+    return accepts.split(",").some((t) => t.includes(type));
+  }
+
   /**
    * Creates an empty response and adds it to Context
    *
@@ -92,6 +97,41 @@ export class Context {
    */
   sendEmpty = (options: ResponseInit = { headers: {} }) => {
     this.res = new Response(null, options);
+    return this;
+  };
+
+  /**
+   * Creates an empty response with redirect headers and adds it to Context
+   *
+   * @param url The URL to redirect to. Use 'back' to go back to Referrer
+   * @param alt The URL to redirect to if no Referrer
+   * @param options (optional) The Response object options
+   * @returns The Context object with redirect headers
+   */
+  redirect = (
+    url: string,
+    alt?: string,
+    options: ResponseInit = { headers: {} }
+  ) => {
+    if (url === "back") {
+      url = this.req.referrer || alt || "/";
+    }
+
+    if (!options.status) {
+      options.status = 302;
+    }
+
+    options.headers ??= {};
+    options.headers["Location"] = encodeURI(url);
+
+    let body;
+    if (this.accepts("html")) {
+      body = `Redirecting to <a href="${url}">${url}</a>.`;
+    } else if (this.accepts("text")) {
+      body = `Redirecting to ${url}.`;
+    }
+
+    this.res = new Response(body, options);
     return this;
   };
 
