@@ -49,6 +49,130 @@ export class Bao {
     this.#router.middleware.register(fn, MiddlewarePosition.After);
   }
 
+  /**
+   * Middleware to handle CORS
+   *
+   * @param config The CORS configuration
+   */
+  cors(
+    config: ICorsConfiguration = {
+      allowedHeaders: [],
+      methods: [],
+      credentials: false,
+      origins: [],
+      exposedHeaders: [],
+      maxAge: 5000,
+    }
+  ) {
+    const allowedHeadersString = config.allowedHeaders.join(", ");
+    const methodsString = config.methods.join(", ");
+    const methodsSet = new Set<string>();
+    const originsStringsSet = new Set<string>();
+    const originsRegexArray: RegExp[] = [];
+    const exposedHeadersString = config.exposedHeaders.join(", ");
+
+    // Add the methods to the methods set
+    for (const method of config.methods) {
+      methodsSet.add(method);
+    }
+
+    // Add the origins that are of type string to the origins string set
+    for (const origin of config.origins) {
+      if (typeof origin === "string") {
+        originsStringsSet.add(origin);
+      }
+    }
+
+    // Add the origins that are of type RegExp to the origins regex array
+    for (const origin of config.origins) {
+      if (origin instanceof RegExp) {
+        originsRegexArray.push(origin);
+      }
+    }
+
+    /**
+     * Finds the appropriate origin to return to the client
+     *
+     * @param origin The origin to test
+     * @returns An origin to return to the client or null
+     */
+    function findOrigin(origin: string): string | null {
+      // Check the specified origin strings first
+      if (originsStringsSet.has(origin)) {
+        return origin;
+      }
+
+      // Compare the origin against the regex's
+      for (const regex of originsRegexArray) {
+        if (regex.test(origin)) {
+          return origin;
+        }
+      }
+
+      // No suitable origin found
+      return null;
+    }
+
+    // Register this middleware
+    this.#router.middleware.register((ctx) => {
+      // The following headers should only be sent for OPTIONS requests
+      if (ctx.req.method === "OPTIONS") {
+        // Set allowed headers
+        if (config.allowedHeaders && config.allowedHeaders.length > 0) {
+          ctx.res.headers.set(
+            "Access-Control-Allow-Headers",
+            allowedHeadersString
+          );
+        }
+
+        // Set method header
+        if (config.methods && config.methods.length > 0) {
+          ctx.res.headers.set("Access-Control-Allow-Methods", methodsString);
+        }
+
+        // Set max age header
+        if (config.maxAge) {
+          ctx.res.headers.set(
+            "Access-Control-Max-Age",
+            config.maxAge.toString()
+          );
+        }
+      }
+
+      // The following headers should be sent for all request methods
+
+      // Set credentials header
+      if (config.credentials === true) {
+        ctx.res.headers.set("Access-Control-Allow-Credentials", "true");
+      }
+
+      // Set origin header
+      const origin = ctx.req.headers.get("Origin");
+      if (origin) {
+        const foundOrigin = findOrigin(origin);
+        if (foundOrigin !== null) {
+          ctx.res.headers.set("Access-Control-Allow-Origin", foundOrigin);
+        }
+      }
+
+      // Set exposed headers
+      if (config.exposedHeaders && config.exposedHeaders.length > 0) {
+        ctx.res.headers.set(
+          "Access-Control-Expose-Headers",
+          exposedHeadersString
+        );
+      }
+
+      // Send the response immediately for OPTIONS requests
+      if (ctx.req.method === "OPTIONS") {
+        return ctx.sendEmpty({ status: 204 }).forceSend();
+      }
+
+      // Return context for all other requests
+      return ctx;
+    }, MiddlewarePosition.Before);
+  }
+
   // HTTP methods
 
   /**
@@ -169,6 +293,15 @@ export class Bao {
       hostname: listen.hostname || "0.0.0.0",
     };
   }
+}
+
+interface ICorsConfiguration {
+  credentials?: boolean;
+  allowedHeaders?: string[];
+  methods?: string[];
+  origins?: (string | RegExp)[];
+  exposedHeaders?: string[];
+  maxAge?: number;
 }
 
 interface IListen {
