@@ -104,7 +104,7 @@ export class Context {
    */
   sendPrettyJson = (
     json: { [key: string]: any },
-    options: ResponseInit = { }
+    options: ResponseInit = {}
   ) => {
     options.headers = {
       "Content-Type": "application/json",
@@ -121,10 +121,7 @@ export class Context {
    * @param options (optional) The Response object options
    * @returns The Context object with plain JSON
    */
-  sendJson = (
-    json: { [key: string]: any },
-    options: ResponseInit = { }
-  ) => {
+  sendJson = (json: { [key: string]: any }, options: ResponseInit = {}) => {
     options.headers = {
       "Content-Type": "application/json",
       ...options.headers,

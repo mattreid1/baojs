@@ -10,7 +10,7 @@
     "outDir": "dist",
     "skipLibCheck": true,
     "sourceMap": true,
-    "types": ["bun-types"]
+    "types": ["bun-types"],
   },
-  "include": ["lib/**/*.ts"]
+  "include": ["lib/**/*.ts"],
 }
