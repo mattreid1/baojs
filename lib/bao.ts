@@ -135,10 +135,17 @@ export class Bao {
    * Start the server on the specified port
    *
    * @param options The options for the server
+   * @param callback The callback function to be run when the server is started
    * @returns A Bun Server object
    */
-  listen(options: IListen = {}): Server {
-    return Bun.serve(this.#serve(options));
+  listen(options: IListen = {}, callback?: () => void): Server {
+    const server = Bun.serve(this.#serve(options));
+
+    if (server && callback) {
+      callback();
+    }
+
+    return server;
   }
 
   #serve(listen: IListen): Serve {
